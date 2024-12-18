@@ -42,7 +42,7 @@ $allowed_modes = ["CTF", "ATG"];
  * Directory where result files are stored. By default, this PHP file should be placed in your Vietcong server root directory.
  * @var string
  */
-$directory = __DIR__ . '/../mpresults';
+$directory = __DIR__ . '/mpresults';
 
 /**
  * Date filter: If you want the script to parse only today's files to reduce load on the API (optional).
@@ -265,10 +265,6 @@ foreach ($files as $file) {
 
   $filePath = $directory . '/' . $file;
 
-  if ($file != 'endresults-2022-04-01_20-32-34.txt') {
-    // continue;
-  }
-
   // Check if file matches the pattern
   if (!preg_match($filePattern, $file)) {
     continue; // skip files that don’t match naming convention
@@ -444,24 +440,25 @@ foreach ($files as $file) {
 // Send to API
 $responses = sendToApi($apiEndpoint, $payloads, $maxResults);
 
-echo "<pre>";
-
-// Process the responses with error handling (multiple responses because of chunking)
-foreach ($responses as $index => $response) {
-  echo "Chunk " . ($index + 1) . ":<br>";
-
-  if ($response['success']) {
-    echo "  Success! HTTP Status: " . $response['status'] . "<br>";
-    echo "  Response: " . $response['response'] . "<br>";
-  } else {
-    echo "  Failed! HTTP Status: " . $response['status'] . "<br>";
-    echo "  Error: " . ($response['error'] ?? 'Unknown error') . "<br>";
-  }
-
-  echo str_repeat('-', 20) . "<br>";
+if (empty($responses)) {
+  die("No files to process.");
 }
 
-echo "</pre>";
+$successCount = 0;
+$errorCount = 0;
+
+// Process the responses with error handling (multiple responses because of chunking)
+foreach ($responses as $response) {
+  if ($response['success']) {
+    $successCount++;
+  } else {
+    $errorCount++;
+  }
+}
+
+$totalCount = count($responses);
+$dateTime = date('Y-m-d H:i:s');
+echo "$dateTime - Files processed: $totalCount, Success: $successCount, Error: $errorCount";
 
 die();
 
