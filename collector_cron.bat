@@ -1,1 +1,1 @@
-php "%cd%\collector.php" > "%cd%\collector.log" 2>&1
+php "%cd%\collector.php" >> "%cd%\collector.log" 2>&1
