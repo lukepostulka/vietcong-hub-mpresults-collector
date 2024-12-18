@@ -56,11 +56,11 @@ Výsledkem by mělo být, že oba soubory budou ve stejné složce s Vietcongem,
 1. Spusťte **CMD** jako administrátor a přidejte úkol takto:
 
    ```cmd
-   schtasks /create /sc minute /mo 5 /tn "RunPHPscript" /tr "C:\Server\Vietcong\collector_cron.bat" /ru SYSTEM
+   schtasks /create /sc minute /mo 5 /tn "VietcongHubMpresultsCollector" /tr "C:\Server\Vietcong\collector_cron.bat" /ru SYSTEM
    ```
 
    - `/sc minute` spouští úlohu každých 5 minut.
-   - `/tn "RunPHPscript"` je název úlohy.
+   - `/tn "VietcongHubMpresultsCollector"` je název úlohy.
    - `/tr` určuje cestu k vašemu `.bat` souboru.
    - `/ru SYSTEM` zajistí, že se úloha spustí i bez přihlášení.
 
@@ -68,7 +68,7 @@ Výsledkem by mělo být, že oba soubory budou ve stejné složce s Vietcongem,
 
 Zkontrolujte vytvořenou úlohu příkazem:
 ```cmd
-schtasks /query /tn "RunPHPscript"
+schtasks /query /tn "VietcongHubMpresultsCollector"
 ```
 
 ### Jak to funguje?
@@ -80,7 +80,7 @@ schtasks /query /tn "RunPHPscript"
 
 Pokud chcete úlohu smazat, použijte:
 ```cmd
-schtasks /delete /tn "RunPHPscript" /f
+schtasks /delete /tn "VietcongHubMpresultsCollector" /f
 ```
 
 ## Install Guide with Setting Up CRON Every 5 Minutes on Windows
@@ -111,11 +111,11 @@ Result should be so that both files are in the same Vietcong game folder as **mp
 1. Open **Command Prompt (CMD)** as an administrator and create a scheduled task:
 
    ```cmd
-   schtasks /create /sc minute /mo 5 /tn "RunPHPscript" /tr "C:\Server\Vietcong\collector_cron.bat" /ru SYSTEM
+   schtasks /create /sc minute /mo 5 /tn "VietcongHubMpresultsCollector" /tr "C:\Server\Vietcong\collector_cron.bat" /ru SYSTEM
    ```
 
    - `/sc minute` schedules the task to run every 5 minutes.
-   - `/tn "RunPHPscript"` sets the name of the task.
+   - `/tn "VietcongHubMpresultsCollector"` sets the name of the task.
    - `/tr` specifies the path to your `.bat` file.
    - `/ru SYSTEM` ensures the task runs even without a user logged in.
 
@@ -123,7 +123,7 @@ Result should be so that both files are in the same Vietcong game folder as **mp
 
 Check the created task using the following command:
 ```cmd
-schtasks /query /tn "RunPHPscript"
+schtasks /query /tn "VietcongHubMpresultsCollector"
 ```
 
 ### How It Works
@@ -135,7 +135,7 @@ schtasks /query /tn "RunPHPscript"
 
 If you want to delete the task, use this command:
 ```cmd
-schtasks /delete /tn "RunPHPscript" /f
+schtasks /delete /tn "VietcongHubMpresultsCollector" /f
 ```
 
 ## How the Collector Works
