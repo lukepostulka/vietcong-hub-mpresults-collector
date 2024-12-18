@@ -26,7 +26,119 @@ All configurations can be modified within the script:
 - `apiEndpoint`: URL of the API endpoint to send the processed JSON payload.
 - `minTagMatches`: Minimum number of players sharing a clan tag for identification (default: `3`).
 
-## How It Works
+## Návod na instalaci a automatické spouštění collectoru každých 5 minut
+
+_(english version below)_
+
+### Krok 1: Instalace PHP přes Chocolatey (snadný způsob)
+
+1. Stáhněte si a nainstalujte [Chocolatey](https://chocolatey.org/install).
+   - Otevřete **PowerShell** s právy administrátora a spusťte:
+     ```Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))```
+
+2. Nainstalujte PHP jednoduše příkazem:
+   ```cmd
+   choco install php
+   ```
+
+3. Zkontrolujte instalaci:
+   ```cmd
+   php -v
+   ```
+
+### Krok 2: Přesuňte soubory do složky s Vietcongem
+
+Přesuňte soubory `collector.php` a `collector_cron.bat` do složky s Vietcongem.
+Výsledkem by mělo být, že oba soubory budou ve stejné složce s Vietcongem, kde je i složka **mpresults**.
+
+### Krok 3: Nastavení opakovaného spouštění pomocí `schtasks`
+
+1. Spusťte **CMD** jako administrátor a přidejte úkol takto:
+
+   ```cmd
+   schtasks /create /sc minute /mo 5 /tn "RunPHPscript" /tr "C:\Server\Vietcong\collector_cron.bat" /ru SYSTEM
+   ```
+
+   - `/sc minute` spouští úlohu každých 5 minut.
+   - `/tn "RunPHPscript"` je název úlohy.
+   - `/tr` určuje cestu k vašemu `.bat` souboru.
+   - `/ru SYSTEM` zajistí, že se úloha spustí i bez přihlášení.
+
+### Krok 4: Kontrola naplánované úlohy
+
+Zkontrolujte vytvořenou úlohu příkazem:
+```cmd
+schtasks /query /tn "RunPHPscript"
+```
+
+### Jak to funguje?
+
+1. Při startu systému a každých 5 minut Windows spustí `.bat` soubor.
+2. `.bat` soubor zavolá PHP collector v aktuálním adresáři.
+
+### Jak odstranit naplánovanou úlohu?
+
+Pokud chcete úlohu smazat, použijte:
+```cmd
+schtasks /delete /tn "RunPHPscript" /f
+```
+
+## Install Guide with Setting Up CRON Every 5 Minutes on Windows
+
+### **Step 1: Install PHP Using Chocolatey (Easy Method)**
+
+1. Download and install [Chocolatey](https://chocolatey.org/install).
+   - Open **PowerShell** with administrator privileges and run the following command:
+     ```Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))```
+
+2. Install PHP easily using Chocolatey:
+   ```cmd
+   choco install php
+   ```
+
+3. Verify the PHP installation:
+   ```cmd
+   php -v
+   ```
+
+### Step 2: Move files to the Vietcong folder
+
+Move files `collector.php` and `collector_cron.bat` in the Vietcong game folder.
+Result should be so that both files are in the same Vietcong game folder as **mpresults** folder.
+
+### Step 3: Set Up Scheduled Execution Using `schtasks`
+
+1. Open **Command Prompt (CMD)** as an administrator and create a scheduled task:
+
+   ```cmd
+   schtasks /create /sc minute /mo 5 /tn "RunPHPscript" /tr "C:\Server\Vietcong\collector_cron.bat" /ru SYSTEM
+   ```
+
+   - `/sc minute` schedules the task to run every 5 minutes.
+   - `/tn "RunPHPscript"` sets the name of the task.
+   - `/tr` specifies the path to your `.bat` file.
+   - `/ru SYSTEM` ensures the task runs even without a user logged in.
+
+### Step 4: Verify the Scheduled Task
+
+Check the created task using the following command:
+```cmd
+schtasks /query /tn "RunPHPscript"
+```
+
+### How It Works
+
+1. At system startup and every 5 minutes thereafter, Windows runs the `.bat` file.
+2. The `.bat` file calls the PHP script in the current directory.
+
+### How to Delete the Scheduled Task
+
+If you want to delete the task, use this command:
+```cmd
+schtasks /delete /tn "RunPHPscript" /f
+```
+
+## How the Collector Works
 
 1. **Locate Files:**
    - Scans the specified directory for files matching the naming pattern.

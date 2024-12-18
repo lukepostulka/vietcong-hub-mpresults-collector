@@ -42,13 +42,13 @@ $allowed_modes = ["CTF", "ATG"];
  * Directory where result files are stored. By default, this PHP file should be placed in your Vietcong server root directory.
  * @var string
  */
-$directory = __DIR__ . '/mpresults';
+$directory = __DIR__ . '/../mpresults';
 
 /**
  * Date filter: If you want the script to parse only today's files to reduce load on the API (optional).
  * @var bool
  */
-$onlyToday = false;
+$onlyToday = true;
 
 /**
  * Today's date in "Y-m-d" format.
@@ -67,6 +67,12 @@ $minTagMatches = 3;
  * @var string
  */
 $apiEndpoint = "https://api.vietcong-hub.cz/v1/rounds";
+
+/**
+ * Maximum number of results to send in a single batch.
+ * @var int
+ */
+$maxResults = 10;
 
 /**
  * File name pattern (e.g., endresults-YYYY-MM-DD_HH-mm-ss.txt).
@@ -187,34 +193,62 @@ function parsePlayers(array $lines)
 }
 
 /**
- * Send JSON to the API endpoint via POST.
+ * Sends a JSON payload to the specified API endpoint via POST.
+ * Supports limiting the number of results sent to the API at once.
  *
- * @param string $url
- * @param array  $payload
- * @return array [success => bool, response => string]
+ * @param string $url The API endpoint.
+ * @param array  $payload The JSON payload to send.
+ * @param int    $maxResults Maximum number of results to send in a single request (default: 10).
+ * @return array Returns an array of responses, each containing success status and response content.
  */
-function sendToApi($url, array $payload)
+function sendToApi(string $url, array $payload, int $maxResults = 10): array
 {
-  $jsonData = json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+  // Ensure payload is within the allowed size limit
+  $chunks = array_chunk($payload, $maxResults);
+  $responses = [];
 
-  $options = [
-    'http' => [
-      'header'  => "Content-Type: application/json\r\n",
-      'method'  => 'POST',
-      'content' => $jsonData,
-      'timeout' => 30
-    ]
-  ];
-  $context  = stream_context_create($options);
-  $result   = @file_get_contents($url, false, $context);
+  foreach ($chunks as $chunk) {
+    // Convert the chunk to JSON
+    $jsonData = json_encode($chunk, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
-  if ($result === FALSE) {
-    return ['success' => false, 'response' => 'Error contacting API'];
+    // Use cURL to send the JSON payload
+    $curl = curl_init($url);
+    curl_setopt_array($curl, [
+      CURLOPT_POST           => true,
+      CURLOPT_RETURNTRANSFER => true,
+      CURLOPT_HTTPHEADER     => [
+        'Content-Type: application/json',
+        'Content-Length: ' . strlen($jsonData),
+      ],
+      CURLOPT_POSTFIELDS     => $jsonData,
+      CURLOPT_TIMEOUT        => 30,
+    ]);
+
+    // Execute the request and capture the response
+    $response = curl_exec($curl);
+    $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+    $error    = curl_error($curl);
+
+    curl_close($curl);
+
+    // Process the response
+    if ($response === false) {
+      $responses[] = [
+        'success' => false,
+        'error'   => $error,
+        'status'  => $httpCode,
+      ];
+    } else {
+      $responses[] = [
+        'success' => $httpCode >= 200 && $httpCode < 300,
+        'response' => $response,
+        'status'   => $httpCode,
+      ];
+    }
   }
 
-  return ['success' => true, 'response' => $result];
+  return $responses;
 }
-
 
 // MAIN LOGIC
 
@@ -407,21 +441,31 @@ foreach ($files as $file) {
   $payloads[] = $payload;
 }
 
-
 // Send to API
-$response = sendToApi($apiEndpoint, $payloads);
+$responses = sendToApi($apiEndpoint, $payloads, $maxResults);
 
-if ($response['success']) {
-  echo "Successfully sent " . count($payloads) . " matches to the API<br>";
-} else {
-  echo "Error sending to API: " . $response['response'] . "<br>";
+echo "<pre>";
+
+// Process the responses with error handling (multiple responses because of chunking)
+foreach ($responses as $index => $response) {
+  echo "Chunk " . ($index + 1) . ":<br>";
+
+  if ($response['success']) {
+    echo "  Success! HTTP Status: " . $response['status'] . "<br>";
+    echo "  Response: " . $response['response'] . "<br>";
+  } else {
+    echo "  Failed! HTTP Status: " . $response['status'] . "<br>";
+    echo "  Error: " . ($response['error'] ?? 'Unknown error') . "<br>";
+  }
+
+  echo str_repeat('-', 20) . "<br>";
 }
+
+echo "</pre>";
 
 die();
 
-// Debug output
-
-echo "<pre>";
+// Use this to debug the payloads
 
 // print_r($payloads);
 // die();
@@ -438,5 +482,3 @@ foreach ($payloads as $payload) {
 
 echo "Total files processed: " . count($files) . "<br>";
 echo "Done.<br>";
-
-echo "</pre>";

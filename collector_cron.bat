@@ -1,0 +1,1 @@
+php "%cd%\collector.php"
