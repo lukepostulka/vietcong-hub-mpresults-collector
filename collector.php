@@ -66,7 +66,7 @@ $minTagMatches = 3;
  * API endpoint to send parsed results.
  * @var string
  */
-$apiEndpoint = "https://example.com/api/matches";
+$apiEndpoint = "https://api.vietcong-hub.cz/v1/rounds";
 
 /**
  * File name pattern (e.g., endresults-YYYY-MM-DD_HH-mm-ss.txt).
@@ -405,26 +405,29 @@ foreach ($files as $file) {
   ];
 
   $payloads[] = $payload;
-
-  // Send to API
-  /* $response = sendToApi($apiEndpoint, $payload);
-
-  if ($response['success']) {
-    echo "Successfully processed: $file<br>";
-    // You could move or rename the file after successful processing
-    // Example: rename($filePath, $directory . '/processed/' . $file);
-  } else {
-    echo "Failed to process $file: {$response['response']}<br>";
-  } */
 }
+
+
+// Send to API
+$response = sendToApi($apiEndpoint, $payloads);
+
+if ($response['success']) {
+  echo "Successfully sent " . count($payloads) . " matches to the API<br>";
+} else {
+  echo "Error sending to API: " . $response['response'] . "<br>";
+}
+
+die();
+
+// Debug output
 
 echo "<pre>";
 
 // print_r($payloads);
 // die();
 
-echo json_encode($payloads);
-die();
+// echo json_encode($payloads);
+// die();
 
 $i = 1;
 foreach ($payloads as $payload) {
