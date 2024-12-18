@@ -367,7 +367,7 @@ foreach ($files as $file) {
 
   // If any of the required fields is missing, skip this file
   if (empty($map) || empty($date) || empty($time) || is_null($usPoints) || is_null($vcPoints)) {
-    echo "Invalid match: missing data in $file<br>";
+    echo "Invalid match: missing data in $file\n";
     continue;
   }
 
@@ -458,7 +458,22 @@ foreach ($responses as $response) {
 
 $totalCount = count($responses);
 $dateTime = date('Y-m-d H:i:s');
-echo "$dateTime - Files processed: $totalCount, Success: $successCount, Error: $errorCount";
+echo "$dateTime - Chunks processed: $totalCount, Success: $successCount, Error: $errorCount\n";
+
+// Process the responses with error handling (multiple responses because of chunking)
+foreach ($responses as $index => $response) {
+  echo "Chunk " . ($index + 1) . ":\n";
+
+  if ($response['success']) {
+    echo "  Success! HTTP Status: " . $response['status'] . "\n";
+    echo "  Response: " . $response['response'] . "\n";
+  } else {
+    echo "  Failed! HTTP Status: " . $response['status'] . "\n";
+    echo "  Error: " . ($response['error'] ?? 'Unknown error') . "\n";
+  }
+
+  echo str_repeat('-', 20) . "\n";
+}
 
 die();
 
