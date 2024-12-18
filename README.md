@@ -46,12 +46,38 @@ _(english version below)_
    php -v
    ```
 
-### Krok 2: Přesuňte soubory do složky s Vietcongem
+### Krok 2: Zapněte nutné PHP knihovny
+
+1. Identifikujte váš php.ini soubor pomocí
+   ```cmd
+   php -i | findstr "Loaded Configuration File"
+   ```
+
+2. Zapněte curl, mbstring a exif knihovny odebráním ; jako:
+   ```cmd
+   extension=curl
+   extension=mbstring
+   extension=exif
+   ```
+
+### Krok 3: Doplňte potřebné PHP certifikáty
+
+- Stáhněte soubor CA bundle z [curl's CA Extract](https://curl.se/docs/caextract.html).
+- Uložte soubor jako `cacert.pem` na známé místo, např. `C:\php\extras\ssl\cacert.pem` na Windows.
+- Otevřete konfigurační soubor PHP (`php.ini`).
+- Najděte nebo přidejte následující řádky:
+  ```ini
+  curl.cainfo = "C:\path\to\cacert.pem"
+  openssl.cafile = "C:\path\to\cacert.pem"
+  ```
+  Nahraďte `"C:\path\to\cacert.pem"` plnou cestou ke staženému souboru `cacert.pem`.
+
+### Krok 4: Přesuňte soubory do složky s Vietcongem
 
 Přesuňte soubory `collector.php` a `collector_cron.bat` do složky s Vietcongem.
 Výsledkem by mělo být, že oba soubory budou ve stejné složce s Vietcongem, kde je i složka **mpresults**.
 
-### Krok 3: Nastavení opakovaného spouštění pomocí `schtasks`
+### Krok 5: Nastavení opakovaného spouštění pomocí `schtasks`
 
 1. Spusťte **CMD** jako administrátor a přidejte úkol takto:
 
@@ -64,7 +90,7 @@ Výsledkem by mělo být, že oba soubory budou ve stejné složce s Vietcongem,
    - `/tr` určuje cestu k vašemu `.bat` souboru.
    - `/ru SYSTEM` zajistí, že se úloha spustí i bez přihlášení.
 
-### Krok 4: Kontrola naplánované úlohy
+### Krok 6: Kontrola naplánované úlohy
 
 Zkontrolujte vytvořenou úlohu příkazem:
 ```cmd
@@ -85,7 +111,7 @@ schtasks /delete /tn "VietcongHubMpresultsCollector" /f
 
 ## Install Guide with Setting Up CRON Every 5 Minutes on Windows
 
-### **Step 1: Install PHP Using Chocolatey (Easy Method)**
+### Step 1: Install PHP Using Chocolatey (Easy Method)
 
 1. Download and install [Chocolatey](https://chocolatey.org/install).
    - Open **PowerShell** with administrator privileges and run the following command:
@@ -101,12 +127,41 @@ schtasks /delete /tn "VietcongHubMpresultsCollector" /f
    php -v
    ```
 
-### Step 2: Move files to the Vietcong folder
+### Step 2: Enable Required PHP Extensions
+
+1. Locate your php.ini file using
+   ```cmd
+   php -i | findstr "Loaded Configuration File"
+   ```
+
+2. Enable curl, mbstring and exif extensions by removing ; like so:
+   ```cmd
+   extension=curl
+   extension=mbstring
+   extension=exif
+   ```
+
+### Step 3: Configuring PHP Certificates
+
+- A CA bundle contains trusted certificates used to verify SSL connections.
+- Download the CA bundle file from [curl's CA Extract](https://curl.se/docs/caextract.html).
+- Save the file as `cacert.pem` in a known location, e.g., `C:\php\extras\ssl\cacert.pem` on Windows.
+
+- Open your PHP configuration file (`php.ini`).
+- Locate or add the following lines:
+  ```ini
+  curl.cainfo = "C:\path\to\cacert.pem"
+  openssl.cafile = "C:\path\to\cacert.pem"
+  ```
+  Replace `"C:\path\to\cacert.pem"` with the full path to your downloaded `cacert.pem` file.
+
+
+### Step 4: Move files to the Vietcong folder
 
 Move files `collector.php` and `collector_cron.bat` in the Vietcong game folder.
 Result should be so that both files are in the same Vietcong game folder as **mpresults** folder.
 
-### Step 3: Set Up Scheduled Execution Using `schtasks`
+### Step 5: Set Up Scheduled Execution Using `schtasks`
 
 1. Open **Command Prompt (CMD)** as an administrator and create a scheduled task:
 
@@ -119,12 +174,13 @@ Result should be so that both files are in the same Vietcong game folder as **mp
    - `/tr` specifies the path to your `.bat` file.
    - `/ru SYSTEM` ensures the task runs even without a user logged in.
 
-### Step 4: Verify the Scheduled Task
+### Step 6: Verify the Scheduled Task
 
 Check the created task using the following command:
 ```cmd
 schtasks /query /tn "VietcongHubMpresultsCollector"
 ```
+
 
 ### How It Works
 
